@@ -19,36 +19,6 @@ roomAvailList = None
 
 @app.route("/")
 def index():
-    # Import data from spreadsheet
-    classesStuff = parseCourseDetails()
-    classList = spreadsheetData['classList']['classes']
-    invalidClasses = spreadsheetData['classList']['invalidClasses']
-
-    buildRoomAvailList(parseRooms())
-
-
-    #TEST binClasses() function:
-    # classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
-    #             {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
-    #             {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
-    bins=binClasses(classList)
-    bin1=binClasses(classList)[0]
-    bin2=binClasses(classList)[1]
-
-
-    # print(bins)
-
-    # print(roomAvailList)
-        # TEST blockRoom() function:
-    for rooms in bin1:
-        count=0
-        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
-        for x in range(len(rooms['days'])):
-            blockRoom (rooms['className'],rooms['roomPrefs'],rooms['days'][count], rooms['startTime'], rooms['endTime'])
-            count+=1
-
-    for rooms in bin2:
-        pass
 
 
     return render_template("index.html")
@@ -74,10 +44,84 @@ def show(filename):
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
-    # analyzeCourseOffering()
+    # Import data from spreadsheet
+    classesStuff = parseCourseDetails(parseRooms())
+    classList = classesStuff['classes']
+    invalidClasses = classesStuff['invalidClasses']
+
+    buildRoomAvailList(parseRooms())
 
 
-    return("Anaylzed")
+    #TEST binClasses() function:
+    # classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
+    #             {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
+    #             {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
+    bins=binClasses(classList)
+    bin1=bins[0]
+    bin2=bins[1]
+
+
+    # print(bins)
+
+    # print(roomAvailList)
+        # TEST blockRoom() function:
+    print(bin1)
+    print('\n\n')
+    print(bin2)
+    print('\n\n')
+
+    unscheduledClasses = []
+
+    for classes in bin1:
+        count=0
+        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+        for x in range(len(classes['days'])):
+            if classes['roomPrefs'] == 0:
+                pass
+            else:
+                if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
+                    # Wasn't scheduled
+                    unscheduledClasses.append(classes)
+            count+=1
+
+    for classes in bin2:
+        count=0
+        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+        for x in range(len(classes['days'])):
+            if classes['roomPrefs'] == 0:
+                pass
+            else:
+                if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
+                    # Wasn't scheduled
+                    unscheduledClasses.append(classes)
+            count+=1
+
+    # fatalFailures = []
+    #
+    # for classes in unscheduledClasses:
+    #     count=0
+    #     # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+    #     for x in range(len(classes['days'])):
+    #         if classes['roomPrefs'] == 0:
+    #             pass
+    #         else:
+    #             nextRoom = nextFreeRoom()
+    #             while not roomIsAvailable(nextRoom, classes['days'], classes['startTime'], classes['endTime']):
+    #                 nextRoom = nextFreeRoom()
+    #             if not (blockRoom (classes['className'], nextFreeRoom(),classes['days'][count], classes['startTime'], classes['endTime'])):
+    #                 # Cannot be scheduled
+    #                 fatalFailures.append(classes)
+    #         count+=1
+
+
+
+    print('\n\n')
+    print(roomAvailList)
+    print('\n\n')
+    print(len(unscheduledClasses))
+    print((len(bin1)+len(bin2))-len(unscheduledClasses))
+
+    return render_template('success.html', roomAvailList=roomAvailList)
 
 def binClasses(classList):
     ''' Classify classes into two bins:
@@ -95,7 +139,7 @@ def binClasses(classList):
     # Get bin two as all other classes, then sort in increasing
     # order of number of classroom preferences specified
     binTWO = [classDetail for classDetail in classList if classDetail not in binONE]
-    binTWO = sorted(binTWO, key=lambda classDetail: len(classDetail['classPrefs']))
+    binTWO = sorted(binTWO, key=itemgetter('size'), reverse=True)#lambda classDetail: len(classDetail['roomPrefs']))
     # Return two-item list containing bin one and bin two
     return [binONE, binTWO]
 
@@ -117,22 +161,31 @@ def blockRoom (className, roomName, day, startT, endT):
         roomAvailList[roomName][day].append([className, startT, endT])
         return True
     else:
-        randomizeRoom(className, roomName, day, startT, endT)
+        # randomizeRoom(className, roomName, day, startT, endT)
         return False
 
-def randomizeRoom(className, roomName, day, startT, endT):
+# def randomizeRoom(className, roomName, day, startT, endT):
+#     ''' Two ways: (1) Look for next available room that fits size and schedule
+#         (brute force). (2) Get list of available rooms, order in decreasing size,
+#         order outstanding rooms in decreasing size, then do optimal allocation.
+#         Stick with way (1) for now. '''
+#     for room in parseRooms():
+#         if roomIsAvailable(room, day)
+#     availableRooms=[]
+#     for room in parseRooms():
+#         print(room['BC 204'])
+#         #print a room that is available during this time slot,and has the room cap
+#         # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
+#         #     p
+#         #     print()
+#         # else:
+#         #     pass
+#
+#     print('failed to schedule')
+
+def nextFreeRoom():
     pass
-    # availableRooms=[]
-    # for room in parseRooms():
-    #     print(room['BC 204'])
-    #     #print a room that is available during this time slot,and has the room cap
-    #     # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
-    #     #     p
-    #     #     print()
-    #     # else:
-    #     #     pass
-    #
-    # print('failed to schedule')
+    # for room in parseRooms
 
 
 def roomIsAvailable(roomName, day, startT, endT):

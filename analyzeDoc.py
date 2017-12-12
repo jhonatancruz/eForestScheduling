@@ -49,7 +49,6 @@ def parseCourseDetails(roomsList):
         className= str(CLA[row][2]).strip() + str(CLA[row][3]).strip() + str(CLA[row][4]).strip()
         # (2-3) Class start and end times
         timeField = CLA[row][12]
-        print(timeField)
         if not timeField:
             # Time field is blank
             classValid = False
@@ -69,7 +68,7 @@ def parseCourseDetails(roomsList):
         try:    days = [{'M':1,'T':2,'W':3,'R':4,'F':5}[day] for day in CLA[row][11]]
         except: days = []
         # (5) Class size (num of students)
-        try:    classSize = CLA[row][14]
+        try:    classSize = int(CLA[row][14])
         except: classSize = 0
         # (6) Room needs and preferences of the class
         try:
