@@ -65,10 +65,10 @@ def show(filename):
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
-    analyzeCourseOffering()
-    analyzeRooms()
+    # analyzeCourseOffering()
+    # analyzeRooms()
 
-    return("Anaylzed")
+    return render_template("showRooms.html")
 
 def binClasses(classList):
     ''' Classify classes into two bins:
