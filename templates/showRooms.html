@@ -29,7 +29,7 @@ p{
 }
 </style>
 <head>
-	<title>Upload</title>
+	<title>ShowRooms</title>
 </head>
 <body>
   <nav class="navbar navbar-inverse bg-inverse" id="nav">
@@ -37,13 +37,39 @@ p{
     <div id="allRight">
   </nav>
 
-	<div class="container">
-		<center><form method=POST enctype=multipart/form-data action="{{ url_for('upload') }}">
-    <input type=file name=photo>
-		<input type="submit" value="Upload file" name="submit">
-		</form>
-	</div>
-    <!-- <input type="submit"> -->
+  <div class="container">
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Class Name </th>
+      <th scope="col">Room Name </th>
+      <th scope="col">Start Time</th>
+      <th scope="col">End Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jacob</td>
+      <td>Thornton</td>
+      <td>@fat</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>Larry</td>
+      <td>the Bird</td>
+      <td>@twitter</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
+</form>
 </body>
 </html>

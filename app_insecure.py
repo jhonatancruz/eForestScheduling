@@ -46,10 +46,10 @@ def index():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-    if request.method == 'POST' and 'photo' in request.files \
-            and filename.rsplit('.', 1)[1].lower() == 'xls':
+    if request.method == 'POST' and 'photo' in request.files:
         filename = photos.save(request.files['photo'])
-        return show(filename)
+        #return show(filename)
+        return(render_template('success.html'))
     return render_template('upload.html')
 
 def show(filename):
@@ -65,10 +65,10 @@ def show(filename):
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
-    analyzeCourseOffering()
-    analyzeRooms()
+    # analyzeCourseOffering()
+    # analyzeRooms()
 
-    return("Anaylzed")
+    return render_template("showRooms.html")
 
 def binClasses(classList):
     ''' Classify classes into two bins:
