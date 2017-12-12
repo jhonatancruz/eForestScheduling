@@ -2,7 +2,9 @@ from flask import Flask, render_template, request
 from datetime import time
 from flask_uploads import UploadSet, configure_uploads, IMAGES, ALL
 from pyexcel_xlsx import get_data
+from operator import attrgetter, itemgetter
 import json
+import math
 
 app=Flask(__name__)
 photos = UploadSet('photos', ALL)
@@ -12,11 +14,16 @@ configure_uploads(app, photos)
 
 @app.route("/")
 def index():
-    roomAvailList = buildRoomAvailList(['hello', 'hey', 'hi'])
-    print(roomAvailList)
-    roomAvailList = blockRoom (roomAvailList, 'hello', 2, time(12, 25), time(13, 30))
-    print(roomAvailList)
-    print(blockRoom(roomAvailList, 'hello', 2, time(13, 00), time(14,00)))
+        # TEST binClasses() function:
+    # classList = [{'size':8, 'classPrefs':[1, 2]}, {'size':10, 'classPrefs':[1, 2]}, {'size':5, 'classPrefs':[3,4,5]}, {'size':6, 'classPrefs':[1, 2]}]
+    # print(binClasses(classList))
+        # TEST buildRoomAvailList() function:
+    # roomAvailList = buildRoomAvailList(['hello', 'hey', 'hi'])
+    # print(roomAvailList)
+        # TEST blockRoom() function:
+    # roomAvailList = blockRoom (roomAvailList, 'hello', 2, time(12, 25), time(13, 30))
+    # print(roomAvailList)
+    # print(blockRoom(roomAvailList, 'hello', 2, time(13, 00), time(14,00)))
     return render_template("index.html")
 
 
@@ -46,6 +53,29 @@ def anaylze(filename):
     # return(jsonDict)
 
     # return jsonDict['Summary']
+
+def binClasses(classList):
+    ''' Classify classes into two bins:
+            Bin One with classes with sizes above the threshold (explained below),
+                sorted in descending order of class size.
+            Bin Two with all other classes, sorted in increasing order of the number
+                of preferred classrooms specified.
+            (Threshold determines which classes go into bin one.
+                We define threshold to be the constant value 0.75) '''
+    highestSize = max([classDetail['size'] for classDetail in classList])
+    threshold = math.floor(0.75 * highestSize)
+    # Get bin one as all classes with size > threshold, then sort it
+    binONE = [classDetail for classDetail in classList if classDetail['size'] >= threshold]
+    binONE = sorted(binONE, key=itemgetter('size'), reverse=True)
+    # Get bin two as all other classes, then sort in increasing
+    # order of number of classroom preferences specified
+    binTWO = [classDetail for classDetail in classList if classDetail not in binONE]
+    binTWO = sorted(binTWO, key=lambda classDetail: len(classDetail['classPrefs']))
+    # Return two-item list containing bin one and bin two
+    return [binONE, binTWO]
+
+
+
 
 
 def buildRoomAvailList(roomList):
@@ -81,6 +111,7 @@ def roomIsAvailable(roomAvail, roomName, day, startT, endT):
 
 
 def features(roomID):
+    ''' Probably not required until we use the database. '''
     ''' Queries database for roomFeaturesCode then decodes into
         the room features it represents, then returns a list of
         those features '''
