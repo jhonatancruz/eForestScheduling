@@ -14,17 +14,37 @@ photos = UploadSet('photos', ALL)
 app.config['UPLOADED_PHOTOS_DEST'] = 'static/img'
 configure_uploads(app, photos)
 
+# Set global variables
+roomAvailList = None
+
 @app.route("/")
 def index():
-        # TEST binClasses() function:
-    # classList = [{'size':8, 'classPrefs':[1, 2]}, {'size':10, 'classPrefs':[1, 2]}, {'size':5, 'classPrefs':[3,4,5]}, {'size':6, 'classPrefs':[1, 2]}]
-    # print(binClasses(classList))
-        # TEST buildRoomAvailList() function:
-    # roomAvailList = buildRoomAvailList(['hello', 'hey', 'hi'])
+    # print(analyzeRooms())
+    buildRoomAvailList(analyzeRooms())
+    print(roomAvailList)
+    print("")
+
+    #TEST binClasses() function:
+    classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
+                {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
+    bins=binClasses(classList)
+    bin1=binClasses(classList)[0]
+    bin2=binClasses(classList)[1]
+
+
+    # print(bins)
+
     # print(roomAvailList)
         # TEST blockRoom() function:
-    # roomAvailList = blockRoom (roomAvailList, 'hello', 2, time(12, 25), time(13, 30))
-    # print(roomAvailList)
+    for rooms in bin1:
+        count=0
+        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+        for x in range(len(rooms['days'])):
+            blockRoom (rooms['className'],rooms['roomPrefs'],rooms['days'][count], rooms['startTime'], rooms['endTime'])
+            count+=1
+
+    print(roomAvailList)
+    # print
     # print(blockRoom(roomAvailList, 'hello', 2, time(13, 00), time(14,00)))
     return render_template("index.html")
 
@@ -49,8 +69,8 @@ def show(filename):
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
-    analyzeCourseOffering()
-    analyzeRooms()
+    # analyzeCourseOffering()
+
 
     return("Anaylzed")
 
@@ -82,27 +102,32 @@ def buildRoomAvailList(roomList):
     ''' Dict with roomName as key containing:
             Dict with day as key containing:
                 List with occupied slots, containing:
-                    Two-item lists of start-time
+                    Three-item lists of class-name, start-time
                     and end-time of occupied slot. '''
-    return {roomName : {day : [] for day in range(1,6)} for roomName in roomList}
+    global roomAvailList    # since mutating
+    roomAvailList = {roomName : {day : [] for day in range(1,6)} for roomName in roomList}
 
-def blockRoom (roomAvail, roomName, day, startT, endT):
+def blockRoom (className, roomName, day, startT, endT):
     ''' If room is available for the time slot for the specific day,
         block the room in the roomAvail dict and return the updated
         roomAvail dict. Otherwise, return FALSE. '''
-    if roomIsAvailable (roomAvail, roomName, day, startT, endT):
-        roomAvail[roomName][day].append([startT, endT])
-        return roomAvail
+    if roomIsAvailable (roomName, day, startT, endT):
+        global roomAvailList    # since mutating
+        roomAvailList[roomName][day].append([className, startT, endT])
+        return True
     else:
         return False
 
-def roomIsAvailable(roomAvail, roomName, day, startT, endT):
+def randomizeRoom():
+    pass
+
+def roomIsAvailable(roomName, day, startT, endT):
     ''' Check availability from the roomAvail dict
         for roomName on day between startT and endT.
         This is done by checking if either the specified
         startTime or endTime within an existing occupied slot. '''
-    for occupiedSlot in roomAvail[roomName][day]:
-        slotStartT, slotEndT = occupiedSlot[0], occupiedSlot[1]
+    for occupiedSlot in roomAvailList[roomName][day]:
+        slotStartT, slotEndT = occupiedSlot[1], occupiedSlot[2]
         if (startT > slotStartT and startT < slotEndT) or (endT > slotStartT and endT < slotEndT):
             return False
 
