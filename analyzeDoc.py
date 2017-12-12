@@ -12,7 +12,7 @@ def analyzeCourseOffering():
     cla= d2["CLA"][5:-4]
     count=0
     for x in cla:
-        className= str(cla[count][2])+str(cla[count][3])
+        className= str(cla[count][2])+str(cla[count][3])+str(cla[count][4])
         try:
             times= cla[count][12].split('-')
             startTime= times[0]
@@ -31,12 +31,18 @@ def analyzeCourseOffering():
         except:
             classSize= 0
         try:
-            classNeeds= cla[count][16]
-            classPref= cla[count][16]
+            if cla[count][16] in joinedRooms:
+                classPref= cla[count][16]
+                classNeeds=0
+            else:
+                classNeeds= cla[count][16]
+                classNeeds=0
         except:
             classNeeds=0
             classPref= 0
 
+        # Process and put into list of dictionaries:
+        
 
         # print(className, startTime, endTime, days, classSize, classNeeds, claasPref)
         classes[className]=[startTime, endTime, days, classSize, classNeeds, classPref]
@@ -44,6 +50,8 @@ def analyzeCourseOffering():
     print(classes)
 
 def analyzeRooms():
+    global joinedRooms
+    joinedRooms=[]
     rooms={}
     allRooms= "static/img/Room_Sizes.xlsx"
     data= get_data(allRooms)
@@ -52,7 +60,9 @@ def analyzeRooms():
     room= d2["rooms"][1:]
     counter=0
     for x in room:
+        # nameRoom="".join(room[counter][0].split(" "))
         nameRoom=room[counter][0]
+        joinedRooms.append(nameRoom)
         try:
             capacity= room[counter][1]
         except:
@@ -64,6 +74,7 @@ def analyzeRooms():
         counter+=1
         rooms[nameRoom]=[capacity,features]
     print(rooms)
+    print(joinedRooms)
 
 analyzeRooms()
 analyzeCourseOffering()
