@@ -46,7 +46,8 @@ def index():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-    if request.method == 'POST' and 'photo' in request.files:
+    if request.method == 'POST' and 'photo' in request.files \
+            and filename.rsplit('.', 1)[1].lower() == 'xls':
         filename = photos.save(request.files['photo'])
         return show(filename)
     return render_template('upload.html')
@@ -173,7 +174,7 @@ def login():
     username = userinfo['email'][:userinfo['email'].index('@')]
 
     print(username)
-    return("successfully logged in")
+    return render_template("upload.html")
 
 
 @app.route('/identity/logout')
