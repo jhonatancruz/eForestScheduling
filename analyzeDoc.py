@@ -74,7 +74,7 @@ def analyzeRooms():
         counter+=1
         rooms[nameRoom]=[capacity,features]
     # print(rooms)
-    return joinedRooms
+    return rooms
 
 analyzeRooms()
 analyzeCourseOffering()

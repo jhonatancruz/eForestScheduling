@@ -19,14 +19,14 @@ roomAvailList = None
 
 @app.route("/")
 def index():
-    # print(analyzeRooms())
+    print(analyzeRooms())
     buildRoomAvailList(analyzeRooms())
-    print(roomAvailList)
-    print("")
+
 
     #TEST binClasses() function:
     classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
-                {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
+                {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
+                {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
     bins=binClasses(classList)
     bin1=binClasses(classList)[0]
     bin2=binClasses(classList)[1]
@@ -43,9 +43,10 @@ def index():
             blockRoom (rooms['className'],rooms['roomPrefs'],rooms['days'][count], rooms['startTime'], rooms['endTime'])
             count+=1
 
-    print(roomAvailList)
-    # print
-    # print(blockRoom(roomAvailList, 'hello', 2, time(13, 00), time(14,00)))
+    for rooms in bin2:
+        pass
+
+
     return render_template("index.html")
 
 
@@ -116,10 +117,20 @@ def blockRoom (className, roomName, day, startT, endT):
         roomAvailList[roomName][day].append([className, startT, endT])
         return True
     else:
+        randomizeRoom(className, roomName, day, startT, endT)
         return False
 
-def randomizeRoom():
-    pass
+def randomizeRoom(className, roomName, day, startT, endT):
+    availableRooms=[]
+    for room in analyzeRooms():
+        #print a room that is available during this time slot,and has the room cap
+        if roomIsAvailable (roomName, day, startT, endT)& size>= sizeRoom:
+            print()
+        else:
+            pass
+
+    print('failed to schedule')
+
 
 def roomIsAvailable(roomName, day, startT, endT):
     ''' Check availability from the roomAvail dict
@@ -128,7 +139,7 @@ def roomIsAvailable(roomName, day, startT, endT):
         startTime or endTime within an existing occupied slot. '''
     for occupiedSlot in roomAvailList[roomName][day]:
         slotStartT, slotEndT = occupiedSlot[1], occupiedSlot[2]
-        if (startT > slotStartT and startT < slotEndT) or (endT > slotStartT and endT < slotEndT):
+        if (startT >= slotStartT and startT <= slotEndT) or (endT >= slotStartT and endT <= slotEndT):
             return False
 
     # Reached here, so not False
