@@ -28,7 +28,7 @@ def index():
         # TEST blockRoom() function
     if (blockRoom ('hello', 2, time(12, 25), time(13, 30))):
         print(roomAvailList)
-    if (blockRoom('hello', 2, time(13, 00), time(14,00))):
+    if (blockRoom('hello', 2, time(13, 00), time(14, 00))):
         print(roomAvailList)
     return render_template("index.html")
 
@@ -53,10 +53,9 @@ def show(filename):
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
-    analyzeCourseOffering()
-    analyzeRooms()
-
-    return("Anaylzed")
+    parseCourseDetails()
+    parseRooms()
+    return ('Analyzed.')
 
 def binClasses(classList):
     ''' Classify classes into two bins:
@@ -84,7 +83,7 @@ def buildRoomAvailList(roomList):
                 List with occupied slots, containing:
                     Two-item lists of start-time
                     and end-time of occupied slot. '''
-    global roomAvailList    # since editing
+    global roomAvailList    # since mutating
     roomAvailList = {roomName : {day : [] for day in range(1,6)} for roomName in roomList}
 
 def blockRoom (roomName, day, startT, endT):
@@ -92,7 +91,7 @@ def blockRoom (roomName, day, startT, endT):
         block the room in the roomAvail dict and return the updated
         roomAvail dict. Otherwise, return FALSE. '''
     if roomIsAvailable (roomName, day, startT, endT):
-        global roomAvailList    # since editing
+        global roomAvailList    # since mutating
         roomAvailList[roomName][day].append([startT, endT])
         return True
     else:

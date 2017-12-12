@@ -1,80 +1,120 @@
 from pyexcel_xlsx import get_data
 import json
+from datetime import time
+
+def main():
+    ''' Main function to run this class as standalone, mainly for testing. '''
+    parsedData = importSpreadsheetData()
+    for classDetail in parsedData[1]['classes']:
+        print(classDetail)
+    print('\n\nCLASSES SKIPPED...\n\n')
+    for className in parsedData[1]['invalidClasses']:
+        print(className)
+
+def importSpreadsheetData():
+    ''' Umbrella function to return list of rooms and list of classes,
+        most useful when called from app.py '''
+    roomsList = parseRooms()
+    classesList = parseCourseDetails(roomsList)
+    return [roomsList, classesList]
 
 
-def analyzeCourseOffering():
-    classes={}
+def parseCourseDetails(roomsList):
+    ''' Function that reads in the list of classes from the appropriate
+        spreadsheet and constructs a list of dictionaries, each dictionary
+        containing relevant details of a single class that will be used
+        by other parts of the program for room scheduling. The function also
+        returns a list of rooms skipped due to inaccuracies in the presentation
+        of the start-times and end-times data, because the program in its
+        current state can only handle time fields with specific formatting.
+
+        Returns a dictionary containing:
+            'classes' :         list of class-detail dictionaries
+            'invalidClasses' :  list of classes that had invalid time-field format
+        '''
+
     allClassses= "static/img/ALL.Spring2018CourseOfferingGrid.xlsx"
 
     data= get_data(allClassses)
     s1=json.dumps(data)
     d2=json.loads(s1)
-    cla= d2["CLA"][5:-4]
-    count=0
-    for x in cla:
-        className= str(cla[count][2])+str(cla[count][3])+str(cla[count][4])
+    # TODO: Standardize this to parse the template spreadsheet
+    CLA= d2["CLA"][5:-4]
+
+    classes = []
+    invalidClasses = []
+    for row in range(len(CLA)):
+        classValid = True
+        # (1) Class name
+        className= str(CLA[row][2]).strip() + str(CLA[row][3]).strip() + str(CLA[row][4]).strip()
+        # (2-3) Class start and end times
+        timeField = CLA[row][12]
+        print(timeField)
+        if not timeField:
+            # Time field is blank
+            classValid = False
+        elif ('TBD' in timeField or 'TBA' in timeField):
+            # Time field is 'TBD'
+            classValid = False
+        elif (' ' in timeField.strip()):
+            # Time field contains spaces so is not in correct format
+            classValid = False
+        else:
+            # Time field is in valid format, so parse
+            # the start and end times into time() objects
+            startTime_str, endTime_str = timeField[:timeField.index('-')], timeField[timeField.index('-')+1:]
+            startTime = time(int(startTime_str[:startTime_str.index(':')]), int(startTime_str[startTime_str.index(':')+1:]))
+            endTime = time(int(endTime_str[:endTime_str.index(':')]), int(endTime_str[endTime_str.index(':')+1:]))
+        # (4) Days that class is offered as a list of numbers
+        try:    days = [{'M':1,'T':2,'W':3,'R':4,'F':5}[day] for day in CLA[row][11]]
+        except: days = []
+        # (5) Class size (num of students)
+        try:    classSize = CLA[row][14]
+        except: classSize = 0
+        # (6) Room needs and preferences of the class
         try:
-            times= cla[count][12].split('-')
-            startTime= times[0]
-        except:
-            times= cla[count][12]
-        try:
-            endTime= times[1]
-        except:
-            endTime = cla[count][12]
-        try:
-            days= cla[count][11]
-        except:
-            days=0
-        try:
-            classSize= cla[count][14]
-        except:
-            classSize= 0
-        try:
-            if cla[count][16] in joinedRooms:
-                classPref= cla[count][16]
-                classNeeds=0
+            if CLA[row][16] in roomsList:
+                # Class pref is a valid room
+                roomPrefs= CLA[row][16]
+                roomNeeds=0
             else:
-                classNeeds= cla[count][16]
-                classNeeds=0
+                roomNeeds= CLA[row][16]
+                roomNeeds=0
         except:
-            classNeeds=0
-            classPref= 0
+            roomNeeds=0
+            roomPrefs= 0
 
-        # Process and put into list of dictionaries:
-        
+        # If the current class is valid, construct the class detail dictionary
+        # out of the above values and add it to the list of all classes
+        if classValid:
+            classes.append({'className':className, 'days':days, 'startTime':startTime, 'endTime':endTime, 'size':classSize, 'roomPrefs':roomPrefs})
+        else:
+            invalidClasses.append(className)
 
-        # print(className, startTime, endTime, days, classSize, classNeeds, claasPref)
-        classes[className]=[startTime, endTime, days, classSize, classNeeds, classPref]
-        count+=1
-    print(classes)
+    # Return a dictionary containing the list of classes and the list
+    # of classes considered invalid and thus excluded from consideration
+    return {'classes':classes, 'invalidClasses':invalidClasses}
 
-def analyzeRooms():
-    global joinedRooms
-    joinedRooms=[]
-    rooms={}
+def parseRooms():
     allRooms= "static/img/Room_Sizes.xlsx"
+
     data= get_data(allRooms)
     s1=json.dumps(data)
     d2=json.loads(s1)
-    room= d2["rooms"][1:]
-    counter=0
-    for x in room:
-        # nameRoom="".join(room[counter][0].split(" "))
-        nameRoom=room[counter][0]
-        joinedRooms.append(nameRoom)
-        try:
-            capacity= room[counter][1]
-        except:
-            capacity=0
-        try:
-            features= room[counter][2]
-        except:
-            features= 0
-        counter+=1
-        rooms[nameRoom]=[capacity,features]
-    print(rooms)
-    print(joinedRooms)
+    ROOMS= d2["rooms"][1:]
 
-analyzeRooms()
-analyzeCourseOffering()
+    roomsList = []
+    for row in range(len(ROOMS)):
+        roomName = ROOMS[row][0]
+        try:    capacity = room[counter][1]
+        except: capacity = 0
+        try:    features = room[counter][2]
+        except: features = 0
+
+        roomsList.append({'roomName':roomName, 'capacity':capacity, 'features':features})
+
+    # Return roomsList
+    return roomsList
+
+if __name__ == '__main__':
+    main()
