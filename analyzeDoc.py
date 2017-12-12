@@ -42,7 +42,7 @@ def analyzeCourseOffering():
             classPref= 0
 
         # Process and put into list of dictionaries:
-        
+
 
         # print(className, startTime, endTime, days, classSize, classNeeds, claasPref)
         classes[className]=[startTime, endTime, days, classSize, classNeeds, classPref]
@@ -73,8 +73,8 @@ def analyzeRooms():
             features= 0
         counter+=1
         rooms[nameRoom]=[capacity,features]
-    print(rooms)
-    print(joinedRooms)
+    # print(rooms)
+    return joinedRooms
 
 analyzeRooms()
 analyzeCourseOffering()
