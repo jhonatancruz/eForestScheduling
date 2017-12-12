@@ -20,7 +20,7 @@ roomAvailList = None
 @app.route("/")
 def index():
     # Import data from spreadsheet
-    spreadsheetData = importSpreadsheetData()
+    classesStuff = parseCourseDetails()
     classList = spreadsheetData['classList']['classes']
     invalidClasses = spreadsheetData['classList']['invalidClasses']
 
