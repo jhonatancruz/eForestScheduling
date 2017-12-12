@@ -4,11 +4,9 @@ from flask_uploads import UploadSet, configure_uploads, IMAGES, ALL
 from pyexcel_xlsx import get_data
 from operator import attrgetter, itemgetter
 import json
-<<<<<<< HEAD
 from analyzeDoc import *
-=======
 import math
->>>>>>> 4d0fa97721ef95dc35bff76fd5bd4a16221b380b
+
 
 app=Flask(__name__)
 photos = UploadSet('photos', ALL)
@@ -43,22 +41,16 @@ def show(filename):
 
     data = get_data(filePosition)
     s1=json.dumps(data)
-<<<<<<< HEAD
     # d2=json.loads(s1)
     # d2= d2["Summary"]
     # s2=json.dumps(d2)
     return s1
-=======
-    d2=json.loads(s1)
-    d2= d2["Summary"]
-    s2=json.dumps(d2)
-    return s2
-    # return(jsonDict)
->>>>>>> 4d0fa97721ef95dc35bff76fd5bd4a16221b380b
+
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
     analyzeCourseOffering()
+    analyzeRooms()
 
     return("Anaylzed")
 
