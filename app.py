@@ -123,11 +123,13 @@ def blockRoom (className, roomName, day, startT, endT):
 def randomizeRoom(className, roomName, day, startT, endT):
     availableRooms=[]
     for room in analyzeRooms():
+        print(room['BC 204'])
         #print a room that is available during this time slot,and has the room cap
-        if roomIsAvailable (roomName, day, startT, endT)& size>= sizeRoom:
-            print()
-        else:
-            pass
+        # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
+        #     p
+        #     print()
+        # else:
+        #     pass
 
     print('failed to schedule')
 
