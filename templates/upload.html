@@ -28,18 +28,20 @@ p{
   padding-right: 100px;
 }
 </style>
+<head>
+	<title>Upload</title>
+</head>
 <body>
   <nav class="navbar navbar-inverse bg-inverse" id="nav">
     <a class="navbar-brand" id="header" href="/">eForest</a>
     <div id="allRight">
   </nav>
-<head>
-	<title>Upload</title>
-</head>
-<body>
-<form method=POST enctype=multipart/form-data action="{{ url_for('upload') }}">
+
+	<div class="container">
+		<center><form method=POST enctype=multipart/form-data action="{{ url_for('upload') }}">
     <input type=file name=photo>
-		<a class="btn btn-primary" type="submit">Submit</a>
+		<input type="submit" value="Upload file" name="submit">
+	</div>
     <!-- <input type="submit"> -->
 </form>
 </body>
