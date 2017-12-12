@@ -19,8 +19,17 @@ roomAvailList = None
 
 @app.route("/")
 def index():
-    print(analyzeRooms())
-    buildRoomAvailList(analyzeRooms())
+    # Import data from spreadsheet
+    spreadsheetData = importSpreadsheetData()
+    roomsDict = spreadsheetData['roomsDict']
+    classList = spreadsheetData['classList']['classes']
+    invalidClasses = spreadsheetData['classList']['invalidClasses']
+
+    print (roomsDict)
+
+    print('\n\n\n XXXXXXX \n\n\n')
+
+    buildRoomAvailList(roomsDict)
 
 
     #TEST binClasses() function:
@@ -118,7 +127,7 @@ def blockRoom (className, roomName, day, startT, endT):
 
 def randomizeRoom(className, roomName, day, startT, endT):
     availableRooms=[]
-    for room in analyzeRooms():
+    for room in parseRooms():
         #print a room that is available during this time slot,and has the room cap
         if roomIsAvailable (roomName, day, startT, endT)& size>= sizeRoom:
             print()

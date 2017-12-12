@@ -14,9 +14,9 @@ def main():
 def importSpreadsheetData():
     ''' Umbrella function to return list of rooms and list of classes,
         most useful when called from app.py '''
-    roomsList = parseRooms()
-    classesList = parseCourseDetails(roomsList)
-    return [roomsList, classesList]
+    roomsDict = parseRooms()
+    classesList = parseCourseDetails(list(roomsDict))
+    return {'roomsDict':roomsDict, 'classList':classesList}
 
 
 def parseCourseDetails(roomsList):
@@ -103,7 +103,7 @@ def parseRooms():
     d2=json.loads(s1)
     ROOMS= d2["rooms"][1:]
 
-    roomsList = []
+    roomsDict = {}
     for row in range(len(ROOMS)):
         roomName = ROOMS[row][0]
         try:    capacity = room[counter][1]
@@ -111,10 +111,10 @@ def parseRooms():
         try:    features = room[counter][2]
         except: features = 0
 
-        roomsList.append({'roomName':roomName, 'capacity':capacity, 'features':features})
+        roomsDict[roomName] = [capacity, features]
 
-    # Return roomsList
-    return roomsList
+    # Return roomsDict
+    return roomsDict
 
 if __name__ == '__main__':
     main()
