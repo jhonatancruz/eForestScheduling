@@ -143,6 +143,10 @@ def binClasses(classList):
     # Return two-item list containing bin one and bin two
     return [binONE, binTWO]
 
+
+
+
+
 def buildRoomAvailList(roomList):
     ''' Dict with roomName as key containing:
             Dict with day as key containing:
