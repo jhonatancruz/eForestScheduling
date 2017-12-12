@@ -65,10 +65,84 @@ def show(filename):
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
-    # analyzeCourseOffering()
-    # analyzeRooms()
+    # Import data from spreadsheet
+    classesStuff = parseCourseDetails(parseRooms())
+    classList = classesStuff['classes']
+    invalidClasses = classesStuff['invalidClasses']
 
-    return render_template("showRooms.html")
+    buildRoomAvailList(parseRooms())
+
+
+    #TEST binClasses() function:
+    # classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
+    #             {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
+    #             {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
+    bins=binClasses(classList)
+    bin1=bins[0]
+    bin2=bins[1]
+
+
+    # print(bins)
+
+    # print(roomAvailList)
+        # TEST blockRoom() function:
+    print(bin1)
+    print('\n\n')
+    print(bin2)
+    print('\n\n')
+
+    unscheduledClasses = []
+
+    for classes in bin1:
+        count=0
+        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+        for x in range(len(classes['days'])):
+            if classes['roomPrefs'] == 0:
+                pass
+            else:
+                if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
+                    # Wasn't scheduled
+                    unscheduledClasses.append(classes)
+            count+=1
+
+    for classes in bin2:
+        count=0
+        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+        for x in range(len(classes['days'])):
+            if classes['roomPrefs'] == 0:
+                pass
+            else:
+                if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
+                    # Wasn't scheduled
+                    unscheduledClasses.append(classes)
+            count+=1
+
+    # fatalFailures = []
+    #
+    # for classes in unscheduledClasses:
+    #     count=0
+    #     # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+    #     for x in range(len(classes['days'])):
+    #         if classes['roomPrefs'] == 0:
+    #             pass
+    #         else:
+    #             nextRoom = nextFreeRoom()
+    #             while not roomIsAvailable(nextRoom, classes['days'], classes['startTime'], classes['endTime']):
+    #                 nextRoom = nextFreeRoom()
+    #             if not (blockRoom (classes['className'], nextFreeRoom(),classes['days'][count], classes['startTime'], classes['endTime'])):
+    #                 # Cannot be scheduled
+    #                 fatalFailures.append(classes)
+    #         count+=1
+
+
+
+    print('\n\n')
+    print(roomAvailList)
+    print('\n\n')
+    print(len(unscheduledClasses))
+    print((len(bin1)+len(bin2))-len(unscheduledClasses))
+
+    return render_template('showRooms.html', roomAvailList=roomAvailList)
 
 def binClasses(classList):
     ''' Classify classes into two bins:
@@ -86,40 +160,63 @@ def binClasses(classList):
     # Get bin two as all other classes, then sort in increasing
     # order of number of classroom preferences specified
     binTWO = [classDetail for classDetail in classList if classDetail not in binONE]
-    binTWO = sorted(binTWO, key=lambda classDetail: len(classDetail['classPrefs']))
+    binTWO = sorted(binTWO, key=itemgetter('size'), reverse=True)#lambda classDetail: len(classDetail['roomPrefs']))
     # Return two-item list containing bin one and bin two
     return [binONE, binTWO]
-
-
-
-
 
 def buildRoomAvailList(roomList):
     ''' Dict with roomName as key containing:
             Dict with day as key containing:
                 List with occupied slots, containing:
-                    Two-item lists of start-time
+                    Three-item lists of class-name, start-time
                     and end-time of occupied slot. '''
-    return {roomName : {day : [] for day in range(1,6)} for roomName in roomList}
+    global roomAvailList    # since mutating
+    roomAvailList = {roomName : {day : [] for day in range(1,6)} for roomName in roomList}
 
-def blockRoom (roomAvail, roomName, day, startT, endT):
+def blockRoom (className, roomName, day, startT, endT):
     ''' If room is available for the time slot for the specific day,
         block the room in the roomAvail dict and return the updated
         roomAvail dict. Otherwise, return FALSE. '''
-    if roomIsAvailable (roomAvail, roomName, day, startT, endT):
-        roomAvail[roomName][day].append([startT, endT])
-        return roomAvail
+    if roomIsAvailable (roomName, day, startT, endT):
+        global roomAvailList    # since mutating
+        roomAvailList[roomName][day].append([className, startT, endT])
+        return True
     else:
+        # randomizeRoom(className, roomName, day, startT, endT)
         return False
 
-def roomIsAvailable(roomAvail, roomName, day, startT, endT):
+# def randomizeRoom(className, roomName, day, startT, endT):
+#     ''' Two ways: (1) Look for next available room that fits size and schedule
+#         (brute force). (2) Get list of available rooms, order in decreasing size,
+#         order outstanding rooms in decreasing size, then do optimal allocation.
+#         Stick with way (1) for now. '''
+#     for room in parseRooms():
+#         if roomIsAvailable(room, day)
+#     availableRooms=[]
+#     for room in parseRooms():
+#         print(room['BC 204'])
+#         #print a room that is available during this time slot,and has the room cap
+#         # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
+#         #     p
+#         #     print()
+#         # else:
+#         #     pass
+#
+#     print('failed to schedule')
+
+def nextFreeRoom():
+    pass
+    # for room in parseRooms
+
+
+def roomIsAvailable(roomName, day, startT, endT):
     ''' Check availability from the roomAvail dict
         for roomName on day between startT and endT.
         This is done by checking if either the specified
         startTime or endTime within an existing occupied slot. '''
-    for occupiedSlot in roomAvail[roomName][day]:
-        slotStartT, slotEndT = occupiedSlot[0], occupiedSlot[1]
-        if (startT > slotStartT and startT < slotEndT) or (endT > slotStartT and endT < slotEndT):
+    for occupiedSlot in roomAvailList[roomName][day]:
+        slotStartT, slotEndT = occupiedSlot[1], occupiedSlot[2]
+        if (startT >= slotStartT and startT <= slotEndT) or (endT >= slotStartT and endT <= slotEndT):
             return False
 
     # Reached here, so not False
@@ -139,6 +236,7 @@ def features(roomID):
         # TODO : (returns int)
 
     # Convert roomFeaturesCode to binary
+
 
 # Login landing page
 @app.route('/identity')

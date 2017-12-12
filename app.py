@@ -121,7 +121,7 @@ def analyze():
     print(len(unscheduledClasses))
     print((len(bin1)+len(bin2))-len(unscheduledClasses))
 
-    return render_template('success.html', roomAvailList=roomAvailList)
+    return render_template('showRooms.html', roomAvailList=roomAvailList)
 
 def binClasses(classList):
     ''' Classify classes into two bins:

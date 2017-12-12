@@ -37,38 +37,32 @@ p{
     <div id="allRight">
   </nav>
 
-  <div class="container">
-    <table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Class Name </th>
-      <th scope="col">Room Name </th>
-      <th scope="col">Start Time</th>
-      <th scope="col">End Time</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Jacob</td>
-      <td>Thornton</td>
-      <td>@fat</td>
-    </tr>
-    <tr>
-      <th scope="row">3</th>
-      <td>Larry</td>
-      <td>the Bird</td>
-      <td>@twitter</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+  <center><h3>Room Allocations</h3></center>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Room</th>
+        <th scope="col">Day</th>
+        <th scope="col">Class</th>
+        <th scope="col">Period</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for room in roomAvailList %}
+        {% for day in roomAvailList[room] %}
+          {% for period in roomAvailList[room][day] %}
+            <tr>
+              <td>{{room}}</td>
+              <td>{{day}}</td>
+              <td>{{period[0]}}</td>
+              <td>{{period[1]}}-{{period[2]}}</td>
+            </tr>
+          {% endfor %}
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+  <br>
 
 </form>
 </body>
