@@ -28,9 +28,9 @@ def index():
 
 
     #TEST binClasses() function:
-    classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
-                {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
-                {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
+    # classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
+    #             {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
+    #             {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
     bins=binClasses(classList)
     bin1=binClasses(classList)[0]
     bin2=binClasses(classList)[1]
@@ -121,17 +121,18 @@ def blockRoom (className, roomName, day, startT, endT):
         return False
 
 def randomizeRoom(className, roomName, day, startT, endT):
-    availableRooms=[]
-    for room in parseRooms():
-        print(room['BC 204'])
-        #print a room that is available during this time slot,and has the room cap
-        # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
-        #     p
-        #     print()
-        # else:
-        #     pass
-
-    print('failed to schedule')
+    pass
+    # availableRooms=[]
+    # for room in parseRooms():
+    #     print(room['BC 204'])
+    #     #print a room that is available during this time slot,and has the room cap
+    #     # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
+    #     #     p
+    #     #     print()
+    #     # else:
+    #     #     pass
+    #
+    # print('failed to schedule')
 
 
 def roomIsAvailable(roomName, day, startT, endT):
