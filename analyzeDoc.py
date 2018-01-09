@@ -19,7 +19,7 @@ def importSpreadsheetData():
     return {'roomsDict':roomsDict, 'classList':classesList}
 
 
-def parseCourseDetails(roomsList):
+def parseCourseDetails(roomsList,filename):
     ''' Function that reads in the list of classes from the appropriate
         spreadsheet and constructs a list of dictionaries, each dictionary
         containing relevant details of a single class that will be used
@@ -33,7 +33,7 @@ def parseCourseDetails(roomsList):
             'invalidClasses' :  list of classes that had invalid time-field format
         '''
 
-    allClassses= "static/img/ALL.Spring2018CourseOfferingGrid.xlsx"
+    allClassses= "static/img/"+filename
 
     data= get_data(allClassses)
     s1=json.dumps(data)
