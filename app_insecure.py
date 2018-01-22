@@ -117,6 +117,20 @@ def analyze():
                     unscheduledClasses.append(classes)
             count+=1
 
+    ''' for each class in unscheduledClasses,
+            (1) loop through the rooms list
+                    (a) if size fits, check if blockroom() works
+            if can't find any spot, add to fatal failures '''
+
+    # for classes in unscheduledClasses:
+    #     for day in classes['days']:
+    #         roomIter = iter(parseRooms())
+    #         foundRoom
+    #         while not blockRoom(classes['className'], next(roomIter), day, classes['startTime'], classes['endTime']):
+    #             pass
+
+
+
     # fatalFailures = []
     #
     # for classes in unscheduledClasses:
