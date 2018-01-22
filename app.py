@@ -140,6 +140,7 @@ def binClasses(classList):
     # order of number of classroom preferences specified
     binTWO = [classDetail for classDetail in classList if classDetail not in binONE]
     binTWO = sorted(binTWO, key=itemgetter('size'), reverse=True)#lambda classDetail: len(classDetail['roomPrefs']))
+    # binTWO = sorted(binTWO, key=lambda classDetail: len(classDetail['roomPrefs']))
     # Return two-item list containing bin one and bin two
     return [binONE, binTWO]
 
