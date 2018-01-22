@@ -41,6 +41,7 @@ p{
   </nav>
 
   <center><h3>Room Allocations</h3></center>
+  <div class="container">
   <table class="table">
     <thead>
       <tr>
@@ -51,6 +52,7 @@ p{
       </tr>
     </thead>
     <tbody>
+    </div>
       {% for room in roomAvailList %}
         {% for day in roomAvailList[room] %}
           {% for period in roomAvailList[room][day] %}
