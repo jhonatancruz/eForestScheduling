@@ -1,6 +1,7 @@
 from pyexcel_xlsx import get_data
 import json
 from datetime import time
+import xlrd
 
 def main():
     ''' Main function to run this class as standalone, mainly for testing. '''
@@ -33,13 +34,26 @@ def parseCourseDetails(roomsList,filename):
             'invalidClasses' :  list of classes that had invalid time-field format
         '''
 
-    allClassses= "static/img/"+filename
+    allClasses= "static/img/"+filename
 
-    data= get_data(allClassses)
+
+
+    # Open the workbook
+    book = xlrd.open_workbook(allClasses)
+
+    # get the list of sheets
+    sheets = book.sheets()
+
+    # print number of rows and cols in first sheet
+    numberOfRows= sheets[1].nrows
+
+
+    data= get_data(allClasses)
     s1=json.dumps(data)
     d2=json.loads(s1)
     # TODO: Standardize this to parse the template spreadsheet
-    CLA= d2["CLA"][5:-4]
+    CLA= d2["CLA"][5:int(numberOfRows)]
+
 
     classes = []
     invalidClasses = []
@@ -62,8 +76,13 @@ def parseCourseDetails(roomsList,filename):
             # Time field is in valid format, so parse
             # the start and end times into time() objects
             startTime_str, endTime_str = timeField[:timeField.index('-')], timeField[timeField.index('-')+1:]
-            startTime = time(int(startTime_str[:startTime_str.index(':')]), int(startTime_str[startTime_str.index(':')+1:]))
-            endTime = time(int(endTime_str[:endTime_str.index(':')]), int(endTime_str[endTime_str.index(':')+1:]))
+            print(startTime_str, endTime_str)
+            try:    startTimeSeparatorIndex = startTime_str.index(':')
+            except: startTimeSeparatorIndex = startTime_str.index('.')
+            try:    endTimeSeparatorIndex = endTime_str.index(':')
+            except: endTimeSeparatorIndex = endTime_str.index('.')
+            startTime = time(int(startTime_str[:startTimeSeparatorIndex]), int(startTime_str[startTimeSeparatorIndex+1:]))
+            endTime = time(int(endTime_str[:endTimeSeparatorIndex]), int(endTime_str[endTimeSeparatorIndex+1:]))
         # (4) Days that class is offered as a list of numbers
         try:    days = [{'M':1,'T':2,'W':3,'R':4,'F':5}[day] for day in CLA[row][11]]
         except: days = []
