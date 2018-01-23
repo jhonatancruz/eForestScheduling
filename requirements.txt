@@ -1,4 +1,5 @@
 click==6.7
+Flask-Uploads==0.2.1
 Flask==0.12.2
 google-api-python-client==1.6.4
 google-auth==1.2.0
@@ -26,3 +27,4 @@ virtualenv-clone==0.2.6
 virtualenvwrapper==4.7.2
 Werkzeug==0.13
 Whoosh==2.7.4
+xlrd==1.1.0

@@ -44,84 +44,87 @@ def show(filename):
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
-    # Import data from spreadsheet
-    classesStuff = parseCourseDetails(parseRooms())
-    classList = classesStuff['classes']
-    invalidClasses = classesStuff['invalidClasses']
+    try:
+        # Import data from spreadsheet
+        classesStuff = parseCourseDetails(parseRooms(),filename)
+        classList = classesStuff['classes']
+        invalidClasses = classesStuff['invalidClasses']
 
-    buildRoomAvailList(parseRooms())
-
-
-    #TEST binClasses() function:
-    # classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
-    #             {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
-    #             {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
-    bins=binClasses(classList)
-    bin1=bins[0]
-    bin2=bins[1]
+        buildRoomAvailList(parseRooms())
 
 
-    # print(bins)
-
-    # print(roomAvailList)
-        # TEST blockRoom() function:
-    print(bin1)
-    print('\n\n')
-    print(bin2)
-    print('\n\n')
-
-    unscheduledClasses = []
-
-    for classes in bin1:
-        count=0
-        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
-        for x in range(len(classes['days'])):
-            if classes['roomPrefs'] == 0:
-                pass
-            else:
-                if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
-                    # Wasn't scheduled
-                    unscheduledClasses.append(classes)
-            count+=1
-
-    for classes in bin2:
-        count=0
-        # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
-        for x in range(len(classes['days'])):
-            if classes['roomPrefs'] == 0:
-                pass
-            else:
-                if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
-                    # Wasn't scheduled
-                    unscheduledClasses.append(classes)
-            count+=1
-
-    # fatalFailures = []
-    #
-    # for classes in unscheduledClasses:
-    #     count=0
-    #     # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
-    #     for x in range(len(classes['days'])):
-    #         if classes['roomPrefs'] == 0:
-    #             pass
-    #         else:
-    #             nextRoom = nextFreeRoom()
-    #             while not roomIsAvailable(nextRoom, classes['days'], classes['startTime'], classes['endTime']):
-    #                 nextRoom = nextFreeRoom()
-    #             if not (blockRoom (classes['className'], nextFreeRoom(),classes['days'][count], classes['startTime'], classes['endTime'])):
-    #                 # Cannot be scheduled
-    #                 fatalFailures.append(classes)
-    #         count+=1
+        #TEST binClasses() function:
+        # classList = [{'className':'MATH151C','days':[1, 3],'startTime':time(12,25),'endTime':time(13,30),'size':8, 'roomPrefs':'ARTS 102'},
+        #             {'className':'MCOM201KZ','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'},
+        #             {'className':'CSCI150','days':[1, 3],'startTime':time(14,00),'endTime':time(15,30),'size':8, 'roomPrefs':'ARTS 121'}]
+        bins=binClasses(classList)
+        bin1=bins[0]
+        bin2=bins[1]
 
 
+        # print(bins)
 
-    print('\n\n')
-    print(roomAvailList)
-    print('\n\n')
-    print(len(unscheduledClasses))
-    print((len(bin1)+len(bin2))-len(unscheduledClasses))
+        # print(roomAvailList)
+            # TEST blockRoom() function:
+        print(bin1)
+        print('\n\n')
+        print(bin2)
+        print('\n\n')
 
-    return render_template('showRooms.html', roomAvailList=roomAvailList)
+        unscheduledClasses = []
+
+        for classes in bin1:
+            count=0
+            # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+            for x in range(len(classes['days'])):
+                if classes['roomPrefs'] == 0:
+                    pass
+                else:
+                    if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
+                        # Wasn't scheduled
+                        unscheduledClasses.append(classes)
+                count+=1
+
+        for classes in bin2:
+            count=0
+            # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+            for x in range(len(classes['days'])):
+                if classes['roomPrefs'] == 0:
+                    pass
+                else:
+                    if not (blockRoom (classes['className'],classes['roomPrefs'],classes['days'][count], classes['startTime'], classes['endTime'])):
+                        # Wasn't scheduled
+                        unscheduledClasses.append(classes)
+                count+=1
+
+        # fatalFailures = []
+        #
+        # for classes in unscheduledClasses:
+        #     count=0
+        #     # print(rooms,rooms['days'][0],rooms['days'][1], len(rooms['days']))
+        #     for x in range(len(classes['days'])):
+        #         if classes['roomPrefs'] == 0:
+        #             pass
+        #         else:
+        #             nextRoom = nextFreeRoom()
+        #             while not roomIsAvailable(nextRoom, classes['days'], classes['startTime'], classes['endTime']):
+        #                 nextRoom = nextFreeRoom()
+        #             if not (blockRoom (classes['className'], nextFreeRoom(),classes['days'][count], classes['startTime'], classes['endTime'])):
+        #                 # Cannot be scheduled
+        #                 fatalFailures.append(classes)
+        #         count+=1
+
+
+
+        print('\n\n')
+        print(roomAvailList)
+        print('\n\n')
+        print(len(unscheduledClasses))
+        print((len(bin1)+len(bin2))-len(unscheduledClasses))
+
+        return render_template('showRooms.html', roomAvailList=roomAvailList)
+    except:
+        return "<h1>Not supported</h1>"
 
 def binClasses(classList):
     ''' Classify classes into two bins:
@@ -223,4 +226,4 @@ def features(roomID):
 
 
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run('localhost', 8080, debug=True)
