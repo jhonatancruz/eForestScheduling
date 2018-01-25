@@ -19,8 +19,6 @@ roomAvailList = None
 
 @app.route("/")
 def index():
-
-
     return render_template("index.html")
 
 
@@ -28,7 +26,7 @@ def index():
 def upload():
     if request.method == 'POST' and 'photo' in request.files:
         filename = photos.save(request.files['photo'])
-        return render_template('success.html')
+        return analyze()
     return render_template('upload.html')
 
 def show(filename):
@@ -124,7 +122,7 @@ def analyze():
 
         return render_template('showRooms.html', roomAvailList=roomAvailList)
     except:
-        return "<h1>Not supported</h1>"
+        return render_template( 'formatfailure.html' )
 
 def binClasses(classList):
     ''' Classify classes into two bins:
