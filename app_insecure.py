@@ -28,7 +28,7 @@ def index():
 def upload():
     if request.method == 'POST' and 'photo' in request.files:
         filename = photos.save(request.files['photo'])
-        return show(filename)
+        return render_template('success.html')
     return render_template('upload.html')
 
 def show(filename):
