@@ -36,7 +36,7 @@ p{
     <a class="navbar-brand" id="header" href="/">eForest</a>
     <div id="allRight">
     <ul class="nav navbar-nav navbar-right" id="login" >
-      <button class="btn btn-danger"><a href="/identity/logout" id="login">Log Out</a></button>
+      <button class="btn btn-success"><a href="/" id="login">Home</a></button>
     </ul>
   </nav>
 
@@ -49,4 +49,55 @@ p{
     <!-- <input type="submit"> -->
 
 </body>
+
+<hr>
+<center>
+    <h4> Please ensure that your spreadsheet file above follows the following constraints.<br>The program <b><u>may not function properly</b></u> if these constraints are in any way violated.</h4>
+</center>
+<ol>
+    <li>The CLA Schedule must be the <b>first</b> sheet from left, within the spreadsheet file.</li>
+    <li>The first <b>3 rows</b> are for the Title and other information. Use them as you wish.</li>
+    <li>Put Column Headers on <b>Row 4</b>.</li>
+    <li>Class Listings must start on <b>Row 5</b>.</li>
+    <li>The last row of the spreadsheet is determined by the first row for which the First Column (“Term”) <b>has no value</b>.</li>
+    <li>At the very least, the following columns must be present, and in exactly the specified order:<br><i>(These titles were taken verbatim from the Spring '18 schedule and are not representative of what the titles can be.)</i>
+        <ol>
+            <li>Term</li>
+            <li>Fac Dept</li>
+            <li>Subj</li>
+            <li>#</li>
+            <li>Sec</li>
+            <li>XL</li>
+            <li>Course Title</li>
+            <li>Instructor</li>
+            <li>Adjunct Y/N (for whom?)</li>
+            <li>Overload Y/N (for whom?)</li>
+            <li>Actual Credits</li>
+            <li>Days</li>
+            <li>Times</li>
+            <li>Course Cap</li>
+            <li>Final Exam Y/N</li>
+            <li>Classroom Needs</li>
+        </ol>
+        <b>Notes:</b>
+        <ul>
+            <li>Column Names can be modified as you like, but the order of columns from left-to-right MUST be preserved.</li>
+            <li>Any number of additional columns can be added, and will have no effect on the running of the program.</li>
+        </ul>
+    </li>
+    <li>The <b>Days</b> column must contain the days that the classes meet in the usual shorthand that is used. Look at the following examples:
+        <ul>
+            <li>For a class that meets on Tuesdays and Thursdays, please enter only the characters <i><u>TR</i></u> in this field.</li>
+            <li>For a class that meets Mondays, Thursdays and Fridays, please enter only the characters <i><u>MRF</i></u>.</li>
+            <li>For TBD classes, entering TBD is accepted. Note that room allocations will not be processed for classes marked as TBD.</li>
+        </ul>
+    </li>
+    <li>The <b>Times</b> column must contain <u>one time slot only</u>, in either of the following two formats ... <b>hh:mm-hh:mm</b> (OR) <b>hh.mm-hh.mm</b> . Please ensure that the hh and mm are separated by either a colon (:) or a period (.) only and not any other character. Also make sure that the two times are separated only by one hyphen (-) and no other character. <i><u>Please make sure no other characters, such as class meeting days, etc, are present in the field.</i></u>
+        <ul>
+            <li>Listing multiple time slots for classes that meet at different times during the week is currently not supported.</li>
+            <li>For TBD classes, entering TBD is accepted. Note that room allocations will not be processed for classes marked as TBD.</li>
+        </ul>
+    </li>
+</ol>
+<hr>
 </html>
