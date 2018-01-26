@@ -76,7 +76,6 @@ def parseCourseDetails(roomsList,filename):
             # Time field is in valid format, so parse
             # the start and end times into time() objects
             startTime_str, endTime_str = timeField[:timeField.index('-')], timeField[timeField.index('-')+1:]
-            print(startTime_str, endTime_str)
             try:    startTimeSeparatorIndex = startTime_str.index(':')
             except: startTimeSeparatorIndex = startTime_str.index('.')
             try:    endTimeSeparatorIndex = endTime_str.index(':')
