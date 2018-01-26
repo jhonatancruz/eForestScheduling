@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from datetime import time
 from flask_uploads import UploadSet, configure_uploads, IMAGES, ALL
 from pyexcel_xlsx import get_data
@@ -19,16 +19,15 @@ roomAvailList = None
 
 @app.route("/")
 def index():
-
-
     return render_template("index.html")
 
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST' and 'photo' in request.files:
+        global filename
         filename = photos.save(request.files['photo'])
-        return show(filename)
+        return analyze()
     return render_template('upload.html')
 
 def show(filename):
@@ -41,6 +40,13 @@ def show(filename):
     # s2=json.dumps(d2)
     return s1
 
+@app.route( "/export" )
+def export():
+    print( "Files files files" )
+    outputFile = "static/RoomAssignments.csv"
+    with open( outputFile, "w" ) as out:
+        out.write( "This is Test Data" )
+    return send_file( outputFile, attachment_filename="RoomAssignments.csv" )
 
 @app.route('/analyze', methods=['GET','POST'])
 def analyze():
@@ -123,8 +129,9 @@ def analyze():
         print((len(bin1)+len(bin2))-len(unscheduledClasses))
 
         return render_template('showRooms.html', roomAvailList=roomAvailList)
-    except:
-        return "<h1>Not supported</h1>"
+    except Exception as e:
+        print( e )
+        return render_template( 'formatfailure.html' )
 
 def binClasses(classList):
     ''' Classify classes into two bins:
@@ -162,8 +169,8 @@ def buildRoomAvailList(roomList):
 
 def blockRoom (className, roomName, day, startT, endT):
     ''' If room is available for the time slot for the specific day,
-        block the room in the roomAvail dict and return the updated
-        roomAvail dict. Otherwise, return FALSE. '''
+        block the room in the roomAvail dict and return TRUE. Otherwise,
+        return FALSE. '''
     if roomIsAvailable (roomName, day, startT, endT):
         global roomAvailList    # since mutating
         roomAvailList[roomName][day].append([className, startT, endT])
@@ -217,13 +224,13 @@ def features(roomID):
         those features '''
 
     # Query database for list of room features
-        # TODO : (return list from curson)
+        # TODO : (return list from cursor)
 
     # Query database for roomfeaturesCode
         # TODO : (returns int)
 
-    # Convert roomFeaturesCode to binary
+    # Convert roomFeaturesCode from binary to dict
 
 
 if __name__=="__main__":
-    app.run('localhost', 8080, debug=True)
+    app.run()
