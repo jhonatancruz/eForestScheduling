@@ -24,9 +24,13 @@
   padding-right: 20px;
 }
 p{
-  padding-left: 100px;
-  padding-right: 100px;
+  width: 80%;
 }
+
+tr > * { /*headers & table elements*/
+  text-align: center;
+}
+
 </style>
 <head>
 	<title>Show Rooms</title>
@@ -39,42 +43,40 @@ p{
       <button class="btn btn-success"><a href="/" id="login">Home</a></button>
     </ul>
   </nav>
-
   <div class="container">
-    <center><h3>Room Allocations</h3></center>
-    <form method="POST" action=""> <!--TODO-->
-      <input type="button" value="Export" class="btn btn-success">Export</button>
-    </form>
+    <h3>
+      <span><center>Room Allocations</center></span>
+      <a href="/export">
+        <button class="btn btn-warning pull-right">Export</button>
+      </a>
+    </h3>
   </div>
-
   <div class="container">
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Room</th>
-        <th scope="col">Day</th>
-        <th scope="col">Class</th>
-        <th scope="col">Period</th>
-      </tr>
-    </thead>
-    <tbody>
-    </div>
-      {% for room in roomAvailList %}
-        {% for day in roomAvailList[room] %}
-          {% for period in roomAvailList[room][day] %}
-            <tr>
-              <td>{{room}}</td>
-              <td>{{day}}</td>
-              <td>{{period[0]}}</td>
-              <td>{{period[1]}}-{{period[2]}}</td>
-            </tr>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Room</th>
+          <th scope="col">Day</th>
+          <th scope="col">Class</th>
+          <th scope="col">Period</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for room in roomAvailList %}
+          {% for day in roomAvailList[room] %}
+            {% for period in roomAvailList[room][day] %}
+              <tr>
+                <td>{{room}}</td>
+                <td>{{day}}</td>
+                <td>{{period[0]}}</td>
+                <td>{{period[1]}}-{{period[2]}}</td>
+              </tr>
+            {% endfor %}
           {% endfor %}
         {% endfor %}
-      {% endfor %}
-    </tbody>
-  </table>
-  <br>
-
-</form>
+      </tbody>
+    </table>
+  </div>
+  </div>
 </body>
 </html>

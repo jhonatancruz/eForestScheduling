@@ -23,10 +23,6 @@
 #dropdown{
   padding-right: 20px;
 }
-p{
-  padding-left: 100px;
-  padding-right: 100px;
-}
 </style>
 <head>
 	<title>Upload Format Failure</title>
@@ -40,8 +36,10 @@ p{
       <button class="btn btn-danger"><a href="/identity/logout" id="login">Log Out</a></button>
     </ul>
   </nav>
-  <center><h1>Not supported</h1></center>
-  <p>The format of the uploaded document is currently not supported. Please use the provided template and carefully read the instructions on the upload page.</p>
+  <div class="container">
+    <center><h1>Not supported</h1></center><br>
+    <p>The format of the uploaded document is currently not supported. Please use the provided template and carefully read the instructions on the upload page.</p>
+  </div>
   <center><a href="/upload" class=" btn btn-success">Try Again</a></center>
 </body>
 </html>
