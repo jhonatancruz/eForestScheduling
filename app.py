@@ -95,14 +95,11 @@ def analyze():
         for course in classList:
             courseAbbr, sectionAbbr = getCourseAbbrs(course['className'])
             course['section'] = sectionAbbr
-            if not courseDict[courseAbbr]:
+            if courseAbbr not in courseDict.keys():
                 courseDict[courseAbbr] = []
             courseDict[courseAbbr].append(course)
 
-        print(courseDict.keys())
-
-
-        # return render_template('showRooms.html', roomAvailList = roomAvailList)
+        # return render_template('showRooms.html', roomAvailList=roomAvailList)
         return render_template('showRooms.html', courseDict = courseDict)
 
     except Exception as e:
