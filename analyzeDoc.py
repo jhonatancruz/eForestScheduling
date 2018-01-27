@@ -132,8 +132,6 @@ def parseRooms():
     ROOMS= d2["rooms"][1:]
 
     roomsDict = {}
-    print(" \nSCHWASUM SCHWASUM SCHWASUM\n", len(ROOMS))
-    print(ROOMS)
     for row in range(len(ROOMS)):
         roomName = ROOMS[row][0]
         try:    capacity = room[counter][1]
