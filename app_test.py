@@ -67,10 +67,9 @@ def analyze():
     try:
         # Import data from spreadsheet
         global classList
-        classList, invalidClasses = parseCourseDetails(parseRooms(), filename)
-        # classesStuff = parseCourseDetails(parseRooms(),filename)
-        # classList = classesStuff['classes']
-        # invalidClasses = classesStuff['invalidClasses']
+        classesStuff = parseCourseDetails(parseRooms(),filename)
+        classList = classesStuff['classes']
+        invalidClasses = classesStuff['invalidClasses']
 
         buildRoomAvailList(parseRooms())
         bins = binClasses(classList)
@@ -79,14 +78,56 @@ def analyze():
 
         unscheduledClasses = []
 
+        print("HELOOUM", len(classList), len(invalidClasses))
+
         # PERFORM ACTUAL SCHEDULING
         # Step 1a : Bin 1
         unscheduledClasses.extend(DO_THE_ACTUAL_SCHEDULING(bin1, True))
+        allScheduledClasses = [course['className'] for course in classList if course['room']]
+        print("after Bin 1, ASC: ", len(allScheduledClasses), len(set(allScheduledClasses)))
+
+        disappearingClassesBin1 = [course for course in classList if course['className'] not in allScheduledClasses and course not in unscheduledClasses]
+        print("DISAPPEARING AFTER BIN 1")
+        for course in disappearingClassesBin1:
+            print(course['className'])
         # Step 1b : Bin 2
         unscheduledClasses.extend(DO_THE_ACTUAL_SCHEDULING(bin2, True))
+        allScheduledClasses = [course['className'] for course in classList if course['room']]
+        print("after Bin 2, ASC: ", len(allScheduledClasses), len(set(allScheduledClasses)))
+
+        disappearingClassesBin2 = [course for course in classList if course['className'] not in allScheduledClasses and course['className'] not in disappearingClassesBin1 and course not in unscheduledClasses]
+        print("DISAPPEARING AFTER BIN 2")
+        for course in disappearingClassesBin2:
+            print(course['className'])
+        print(len(unscheduledClasses))
         # Step 2  : Classes that were not scheduled in Step 1
         fatalFailures = []
         fatalFailures.extend(DO_THE_ACTUAL_SCHEDULING(unscheduledClasses, False))
+        allScheduledClasses = [course['className'] for course in classList if course['room']]
+        print("after Unsched, ASC: ", len(allScheduledClasses), len(set(allScheduledClasses)))
+
+        disappearingClassesUnsched = [course for course in classList if course['className'] not in allScheduledClasses and course['className'] not in disappearingClassesBin1 and course['className'] not in disappearingClassesBin2 and course not in unscheduledClasses]
+        print("DISAPPEARING AFTER UNSCHEDULED")
+        for course in disappearingClassesUnsched:
+            print(course['className'])
+
+
+        # GET THE LIST OF 20-ISH TROUBLESOME CLASSES:
+        # disappearingClasses = [course for course in classList if course['className'] not in allScheduledClasses and course['className'] in unscheduledClasses]
+        # for course in disappearingClasses:
+        #     print(course['className'])
+
+        # PREPPING LISTS FOR EASY TEMPLATING:
+        # List of all Classes:
+        # allScheduledClasses = [course['className'] for course in classList if course['room']]
+        # allScheduledClasses = set(allScheduledClasses)
+        # # Details per Class:
+        # classDetailDict = {course : [] for course in allScheduledClasses}
+        # # classDetailDict[course].append/extend
+        # for room in roomAvailList:
+        #     for day in roomAvailList[room]:
+        #         for courseDetail in roomAvailList[room][day]:
+        #             classDetailDict[courseDetail[0]].extend([day, room, courseDetail[1], courseDetail[2]])
 
         # PREPPING LISTS FOR EASY TEMPLATING
         # Sort alphabetically by className
@@ -100,14 +141,16 @@ def analyze():
                 courseDict[courseAbbr] = []
             courseDict[courseAbbr].append(course)
 
+        print(courseDict.keys())
+
         # return render_template('showRooms.html', roomAvailList=roomAvailList)
         return render_template('showRooms.html', courseDict = courseDict)
-
     except Exception as e:
         print( e )
         return render_template( 'formatFailure.html' )
 
 def DO_THE_ACTUAL_SCHEDULING(binOfClasses, attemptPreferenceBasedScheduling):
+    count = 0
     unscheduledClasses = []
     for course in binOfClasses:
         # if course['className'] == "EAP101ZM":
@@ -121,20 +164,25 @@ def DO_THE_ACTUAL_SCHEDULING(binOfClasses, attemptPreferenceBasedScheduling):
                     break;
             # IF room was found to be available, schedule the course:
             if roomAvailable:
+                count = count +1
                 for day in course['days']:
                     blockRoom(course['className'], course['roomPrefs'], day, course['startTime'], course['endTime'])
             else:
+                count = count +1
                 unscheduledClasses.append(course)
         else:
             # There are no preferred rooms so assign this course a RANDOM ROOM
             room = findAvailableRoom(course['days'], course['startTime'], course['endTime'])
             if room:
+                count = count +1
                 # A room was found
                 for day in course['days']:
                     blockRoom(course['className'], room, day, course['startTime'], course['endTime'])
             else:
+                count = count +1
                 # No room could be found for the course
                 unscheduledClasses.append(course)
+    print("TATUM TATUM", len(binOfClasses), count, len(unscheduledClasses))
     return unscheduledClasses
 
 
@@ -157,6 +205,25 @@ def getCourseAbbrs(courseName):
             deptAbbrFound = True
         elif char in '1234567890':
             courseLevelFound = True
+
+
+
+# def getCourseAbbrs(courseName):
+#     """ Returns department abbreviation from course name by returning all characters
+#         up to the first number. The first numbers in the formatted course name
+#         are the class level and so the preceding characters are always dept. abbr.
+#     """
+#
+#     for index, char in enumerate(courseName[::-1]):
+#         if char in '0123456789':
+#             print(char, index)
+#             # Char is a number, so return the last index
+#             index = index - (index * 2)
+#             courseAbbr = courseName[:index]
+#             sectionAbbr = courseName[index:]
+#             break
+#     # Return
+#     return courseAbbr, sectionAbbr
 
 
 
@@ -208,8 +275,7 @@ def buildRoomAvailList(roomList):
                     and end-time of occupied slot. '''
     global roomAvailList    # since mutating
     roomAvailList = {roomName : {day : [] for day in range(1,6)} for roomName in roomList}
-
-
+    print(" \n CASUMBUM CASUMBUM CASUMBUM\n", roomAvailList)
 
 def blockRoom (className, roomName, day, startT, endT):
     ''' If room is available for the time slot for the specific day,
@@ -229,8 +295,6 @@ def blockRoom (className, roomName, day, startT, endT):
     else:
         return False
 
-
-
 def roomIsAvailable(roomName, day, startT, endT):
     ''' Check availability from the roomAvail dict
         for roomName on day between startT and endT.
@@ -244,6 +308,24 @@ def roomIsAvailable(roomName, day, startT, endT):
     # Reached here, so not False
     return True
 
+# def randomizeRoom(className, roomName, day, startT, endT):
+#     ''' Two ways: (1) Look for next available room that fits size and schedule
+#         (brute force). (2) Get list of available rooms, order in decreasing size,
+#         order outstanding rooms in decreasing size, then do optimal allocation.
+#         Stick with way (1) for now. '''
+#     for room in parseRooms():
+#         if roomIsAvailable(room, day)
+#     availableRooms=[]
+#     for room in parseRooms():
+#         print(room['BC 204'])
+#         #print a room that is available during this time slot,and has the room cap
+#         # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
+#         #     p
+#         #     print()
+#         # else:
+#         #     pass
+#
+#     print('failed to schedule')
 
 
 def features(roomID):
@@ -262,4 +344,4 @@ def features(roomID):
 
 
 if __name__=="__main__":
-    app.run()
+    app.run(debug=True)
