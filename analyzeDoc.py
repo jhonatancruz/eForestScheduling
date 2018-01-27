@@ -2,7 +2,7 @@ from pyexcel_xlsx import get_data
 import json
 from datetime import time
 import xlrd
-from app import Course
+# from app import Course
 
 def main():
     ''' Main function to run this class as standalone, mainly for testing. '''
