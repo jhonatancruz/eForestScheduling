@@ -2,6 +2,7 @@ from pyexcel_xlsx import get_data
 import json
 from datetime import time
 import xlrd
+from app import Course
 
 def main():
     ''' Main function to run this class as standalone, mainly for testing. '''
@@ -60,51 +61,58 @@ def parseCourseDetails(roomsList,filename):
     for row in range(len(CLA)):
         classValid = True
         # (1) Class name
-        className= str(CLA[row][2]).strip() + str(CLA[row][3]).strip() + str(CLA[row][4]).strip()
+        try:    className= str(CLA[row][2]).strip() + str(CLA[row][3]).strip() + str(CLA[row][4]).strip()
+        except: classValid = False
         # (2-3) Class start and end times
-        timeField = CLA[row][12]
-        if not timeField:
-            # Time field is blank
+        try:
+            timeField = CLA[row][12].strip()
+            if not timeField:
+                # Time field is blank
+                classValid = False
+            elif ('TBD' in timeField or 'TBA' in timeField):
+                # Time field is 'TBD'
+                classValid = False
+            elif (' ' in timeField):
+                # Time field contains spaces so is not in correct format
+                classValid = False
+            else:
+                # Time field is in valid format, so parse
+                # the start and end times into time() objects
+                startTime_str, endTime_str = timeField[:timeField.index('-')], timeField[timeField.index('-')+1:]
+                try:    startTimeSeparatorIndex = startTime_str.index(':')
+                except: startTimeSeparatorIndex = startTime_str.index('.')
+                try:    endTimeSeparatorIndex = endTime_str.index(':')
+                except: endTimeSeparatorIndex = endTime_str.index('.')
+                startTime = time(int(startTime_str[:startTimeSeparatorIndex]), int(startTime_str[startTimeSeparatorIndex+1:]))
+                endTime = time(int(endTime_str[:endTimeSeparatorIndex]), int(endTime_str[endTimeSeparatorIndex+1:]))
+        except:
             classValid = False
-        elif ('TBD' in timeField or 'TBA' in timeField):
-            # Time field is 'TBD'
-            classValid = False
-        elif (' ' in timeField.strip()):
-            # Time field contains spaces so is not in correct format
-            classValid = False
-        else:
-            # Time field is in valid format, so parse
-            # the start and end times into time() objects
-            startTime_str, endTime_str = timeField[:timeField.index('-')], timeField[timeField.index('-')+1:]
-            try:    startTimeSeparatorIndex = startTime_str.index(':')
-            except: startTimeSeparatorIndex = startTime_str.index('.')
-            try:    endTimeSeparatorIndex = endTime_str.index(':')
-            except: endTimeSeparatorIndex = endTime_str.index('.')
-            startTime = time(int(startTime_str[:startTimeSeparatorIndex]), int(startTime_str[startTimeSeparatorIndex+1:]))
-            endTime = time(int(endTime_str[:endTimeSeparatorIndex]), int(endTime_str[endTimeSeparatorIndex+1:]))
         # (4) Days that class is offered as a list of numbers
-        try:    days = [{'M':1,'T':2,'W':3,'R':4,'F':5}[day] for day in CLA[row][11]]
-        except: days = []
+        try:
+            daysField = CLA[row][11].strip()
+            days = [{'M':1,'T':2,'W':3,'R':4,'F':5}[day] for day in daysField]
+        except: classValid = False
         # (5) Class size (num of students)
         try:    classSize = int(CLA[row][14])
-        except: classSize = 0
+        except: classValid = False
         # (6) Room needs and preferences of the class
         try:
-            if CLA[row][16] in roomsList:
+            roomPrefField = CLA[row][16].strip()
+            if roomPrefField in roomsList:
                 # Class pref is a valid room
-                roomPrefs= CLA[row][16]
-                roomNeeds=0
+                roomPrefs = roomPrefField
             else:
-                roomNeeds= CLA[row][16]
-                roomNeeds=0
+                roomPrefs = None
+            # else:   roomNeeds= CLA[row][16]
         except:
-            roomNeeds=0
-            roomPrefs= 0
+            roomPrefs = None
 
         # If the current class is valid, construct the class detail dictionary
         # out of the above values and add it to the list of all classes
         if classValid:
-            classes.append({'className':className, 'days':days, 'startTime':startTime, 'endTime':endTime, 'size':classSize, 'roomPrefs':roomPrefs})
+            # courseObject = Course(className, days = days, startTime = startTime, endTime = endTime, size = size, roomPrefs = roomPrefs)
+            # classes.append(courseObject)
+            classes.append({'className':className, 'days':days, 'startTime':startTime, 'endTime':endTime, 'size':classSize, 'roomPrefs':roomPrefs, 'room':None})
         else:
             invalidClasses.append(className)
 
@@ -121,6 +129,8 @@ def parseRooms():
     ROOMS= d2["rooms"][1:]
 
     roomsDict = {}
+    print(" \nSCHWASUM SCHWASUM SCHWASUM\n", len(ROOMS))
+    print(ROOMS)
     for row in range(len(ROOMS)):
         roomName = ROOMS[row][0]
         try:    capacity = room[counter][1]

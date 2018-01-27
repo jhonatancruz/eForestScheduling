@@ -16,6 +16,21 @@ configure_uploads(app, photos)
 
 # Set global variables
 roomAvailList = None
+classList = None
+
+# TODO: Rather than keeping the course info
+#       in a dictionary, upgrade it to instances
+#       of the below class
+class Course:
+    """ Holds all fields of data for a single course."""
+    def __init__(self, className, days = None, startTime = None, endTime = None, size = None, roomPrefs = None, room = None):
+        self.className = className
+        self.days = days
+        self.startTime = startTime
+        self.endTime = endTime
+        self.size = size
+        self.roomPrefs = roomPrefs
+        self.room = room
 
 @app.route("/")
 def index():
@@ -52,6 +67,7 @@ def export():
 def analyze():
     try:
         # Import data from spreadsheet
+        global classList
         classesStuff = parseCourseDetails(parseRooms(),filename)
         classList = classesStuff['classes']
         invalidClasses = classesStuff['invalidClasses']
@@ -66,14 +82,47 @@ def analyze():
         # PERFORM ACTUAL SCHEDULING
         # Step 1a : Bin 1
         unscheduledClasses.extend(DO_THE_ACTUAL_SCHEDULING(bin1, True))
+        allScheduledClasses = [course for course in classList if course['room']]
+        print("after Bin 1, ASC: ", len(allScheduledClasses))
+        allScheduledClasses = set(allScheduledClasses)
+        print("after Bin 1, ASC: ", len(allScheduledClasses))
+
+        # allScheduledClasses = []
+        # for day in roomAvailList.values():
+        #     for slotList in day.values():
+        #         for slot in slotList:
+        #             allScheduledClasses.append(slot[0])
+        # allScheduledClasses = set(allScheduledClasses)
+        # print("after Bin 1, ASC: ", len(allScheduledClasses))
         # Step 1b : Bin 2
         unscheduledClasses.extend(DO_THE_ACTUAL_SCHEDULING(bin2, True))
+        allScheduledClasses = [course for course in classList if course['room']]
+        print("after Bin 2, ASC: ", len(allScheduledClasses))
+        allScheduledClasses = set(allScheduledClasses)
+        print("after Bin 2, ASC: ", len(allScheduledClasses))
+
+        # allScheduledClasses = []
+        # for day in roomAvailList.values():
+        #     for slotList in day.values():
+        #         for slot in slotList:
+        #             allScheduledClasses.append(slot[0])
+        # allScheduledClasses = set(allScheduledClasses)
+        # print("after Bin 2, ASC: ", len(allScheduledClasses))
         # Step 2  : Classes that were not scheduled in Step 1
         fatalFailures = []
         fatalFailures.extend(DO_THE_ACTUAL_SCHEDULING(unscheduledClasses, False))
+        allScheduledClasses = [course for course in classList if course['room']]
+        print("after Unsched, ASC: ", len(allScheduledClasses))
+        allScheduledClasses = set(allScheduledClasses)
+        print("after Unsched, ASC: ", len(allScheduledClasses))
 
-        print(len(unscheduledClasses))
-        print((len(bin1)+len(bin2))-len(unscheduledClasses))
+        # allScheduledClasses = []
+        # for day in roomAvailList.values():
+        #     for slotList in day.values():
+        #         for slot in slotList:
+        #             allScheduledClasses.append(slot[0])
+        # allScheduledClasses = set(allScheduledClasses)
+        # print("after Unsched, ASC: ", len(allScheduledClasses))
 
         # PREPPING LISTS FOR EASY TEMPLATING:
         # List of all Classes:
@@ -93,16 +142,19 @@ def analyze():
                     classDetailDict[courseDetail[0]].extend([day, room, courseDetail[1], courseDetail[2]])
         # Covert the lists to sets:
 
-        print(classDetailDict.values())
+        # print(classDetailDict.values())
 
         # FOR DEBUG
         print("FUM FUM FUM")
-        print(fatalFailures)
-        print(len(bin1), len(bin2))
+        print(len(fatalFailures), fatalFailures)
+        print("TOTAL:", len(bin1) + len(bin2))
+
+        print("UN   UN   UN")
+        print(len(unscheduledClasses))
 
         print("TRUM  TRUM  TRUM")
         print(len(allScheduledClasses))
-        print(allScheduledClasses)
+        # print(allScheduledClasses)
 
         return render_template('showRooms.html', roomAvailList=roomAvailList)
         # return render_template('showRooms.html', classDetailDict=classDetailDict)
@@ -114,16 +166,23 @@ def DO_THE_ACTUAL_SCHEDULING(binOfClasses, attemptPreferenceBasedScheduling):
     unscheduledClasses = []
     for course in binOfClasses:
         if course['roomPrefs'] == 0 or not attemptPreferenceBasedScheduling:
+            # There are no preferred rooms so assign this course a RANDOM ROOM
             room = findAvailableRoom(course['days'], course['startTime'], course['endTime'])
-            for day in course['days']:
-                blockRoom(course['className'], room, day, course['startTime'], course['endTime'])
+            if room:
+                # A room was found
+                for day in course['days']:
+                    blockRoom(course['className'], room, day, course['startTime'], course['endTime'])
+            else:
+                # No room could be found for the course
+                unscheduledClasses.append(course)
         else:
+            # There is a preferred so cheeck if it is available for the course days
             roomAvailable = True
             for day in course['days']:
                 if not roomIsAvailable(course['roomPrefs'], day, course['startTime'], course['endTime']):
                     roomAvailable = False
                     break;
-            # Check if room finally was available for all days
+            # IF room was found to be available, schedule the course:
             if roomAvailable:
                 for day in course['days']:
                     blockRoom(course['className'], course['roomPrefs'], day, course['startTime'], course['endTime'])
@@ -143,7 +202,8 @@ def findAvailableRoom(days, startT, endT):
         # If roomAvailable is True at this line then the inner for loop was not broken out of
         if roomAvailable:
             return room
-
+    # If execution reaches this point, a room hasn't been found
+    return None
 
 def binClasses(classList):
     ''' Classify classes into two bins:
@@ -182,11 +242,17 @@ def blockRoom (className, roomName, day, startT, endT):
         block the room in the roomAvail dict and return TRUE. Otherwise,
         return FALSE. '''
     if roomIsAvailable (roomName, day, startT, endT):
+        # Block the room in the roomAvailList:
         global roomAvailList    # since mutating
         roomAvailList[roomName][day].append([className, startT, endT])
+        # Add the room assignment to the specific course in the classList:
+        global classList    # since mutating
+        for course in classList:
+            if course['className'] == className:
+                course['room'] = roomName
+        # Return the confirmation
         return True
     else:
-        # randomizeRoom(className, roomName, day, startT, endT)
         return False
 
 def roomIsAvailable(roomName, day, startT, endT):
