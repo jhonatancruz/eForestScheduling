@@ -23,6 +23,9 @@
 #dropdown{
   padding-right: 20px;
 }
+td{
+    vertical-align: middle;
+}
 p{
   width: 80%;
 }
@@ -51,27 +54,44 @@ tr > * { /*headers & table elements*/
       </a>
     </h3>
   </div>
-  <div class="container">
+  <div class="container" vertical-align="middle">
     <table class="table">
       <thead>
         <tr>
-          <th scope="col">Room</th>
-          <th scope="col">Day</th>
-          <th scope="col">Class</th>
+          <th scope="col">Course</th>
+          <th scope="col">Section</th>
+          <th scope="col">Room Assignment</th>
           <th scope="col">Period</th>
+          <th scope="col">Days</th>
         </tr>
       </thead>
       <tbody>
-        {% for room in roomAvailList %}
-          {% for day in roomAvailList[room] %}
-            {% for period in roomAvailList[room][day] %}
-              <tr>
-                <td>{{room}}</td>
-                <td>{{day}}</td>
-                <td>{{period[0]}}</td>
-                <td>{{period[1]}}-{{period[2]}}</td>
-              </tr>
+        {% for course in courseDict %}
+          {% for courseDetails in courseDict[course] %}
+            <tr>
+            {% if loop.index == 1 %}
+              <td rowspan="{{courseDict[course]|length}}" valign="middle" halign="middle">{{course}}</td>
+            {% endif %}
+            <td>{{courseDetails['section']}}</td>
+            <td>{{courseDetails['room']}}</td>
+            <td>{{courseDetails['startTime']}}-{{courseDetails['endTime']}}</td>
+            <!-- {% set daysStr = "" %}
+            {% for day in courseDetails['days'] %}
+              {% if day == 1 %}
+                {{ daysStr|join("M") }}
+              {% elif day == 2 %}
+                {{ daysStr|join("T") }}
+              {% elif day == 3 %}
+                {{ daysStr|join("W") }}
+              {% elif day == 4 %}
+                {{ daysStr|join("R") }}
+              {% elif day == 5 %}
+                {{ daysStr|join("F") }}
+              {% endif %}
             {% endfor %}
+            <td>{{daysStr}}</td> -->
+            <td>{{courseDetails['days']}}</td>
+            </tr>
           {% endfor %}
         {% endfor %}
       </tbody>

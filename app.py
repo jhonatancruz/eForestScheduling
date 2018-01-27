@@ -7,7 +7,6 @@ import json
 from analyzeDoc import *
 import math
 
-
 app=Flask(__name__)
 photos = UploadSet('photos', ALL)
 
@@ -82,82 +81,30 @@ def analyze():
         # PERFORM ACTUAL SCHEDULING
         # Step 1a : Bin 1
         unscheduledClasses.extend(DO_THE_ACTUAL_SCHEDULING(bin1, True))
-        allScheduledClasses = [course for course in classList if course['room']]
-        print("after Bin 1, ASC: ", len(allScheduledClasses))
-        allScheduledClasses = set(allScheduledClasses)
-        print("after Bin 1, ASC: ", len(allScheduledClasses))
-
-        # allScheduledClasses = []
-        # for day in roomAvailList.values():
-        #     for slotList in day.values():
-        #         for slot in slotList:
-        #             allScheduledClasses.append(slot[0])
-        # allScheduledClasses = set(allScheduledClasses)
-        # print("after Bin 1, ASC: ", len(allScheduledClasses))
         # Step 1b : Bin 2
         unscheduledClasses.extend(DO_THE_ACTUAL_SCHEDULING(bin2, True))
-        allScheduledClasses = [course for course in classList if course['room']]
-        print("after Bin 2, ASC: ", len(allScheduledClasses))
-        allScheduledClasses = set(allScheduledClasses)
-        print("after Bin 2, ASC: ", len(allScheduledClasses))
-
-        # allScheduledClasses = []
-        # for day in roomAvailList.values():
-        #     for slotList in day.values():
-        #         for slot in slotList:
-        #             allScheduledClasses.append(slot[0])
-        # allScheduledClasses = set(allScheduledClasses)
-        # print("after Bin 2, ASC: ", len(allScheduledClasses))
         # Step 2  : Classes that were not scheduled in Step 1
         fatalFailures = []
         fatalFailures.extend(DO_THE_ACTUAL_SCHEDULING(unscheduledClasses, False))
-        allScheduledClasses = [course for course in classList if course['room']]
-        print("after Unsched, ASC: ", len(allScheduledClasses))
-        allScheduledClasses = set(allScheduledClasses)
-        print("after Unsched, ASC: ", len(allScheduledClasses))
 
-        # allScheduledClasses = []
-        # for day in roomAvailList.values():
-        #     for slotList in day.values():
-        #         for slot in slotList:
-        #             allScheduledClasses.append(slot[0])
-        # allScheduledClasses = set(allScheduledClasses)
-        # print("after Unsched, ASC: ", len(allScheduledClasses))
+        # PREPPING LISTS FOR EASY TEMPLATING
+        # Sort alphabetically by className
+        classList = sorted(classList, key=itemgetter('className'))
+        # Group into dictionaries by class Name regardless of section
+        courseDict = {}
+        for course in classList:
+            courseAbbr, sectionAbbr = getCourseAbbrs(course['className'])
+            course['section'] = sectionAbbr
+            if not courseDict[courseAbbr]:
+                courseDict[courseAbbr] = []
+            courseDict[courseAbbr].append(course)
 
-        # PREPPING LISTS FOR EASY TEMPLATING:
-        # List of all Classes:
-        allScheduledClasses = []
-        for day in roomAvailList.values():
-            for slotList in day.values():
-                for slot in slotList:
-                    allScheduledClasses.append(slot[0])
-        print(len(allScheduledClasses))
-        allScheduledClasses = set(allScheduledClasses)
-        # Details per Class:
-        classDetailDict = {course : [] for course in allScheduledClasses}
-        # classDetailDict[course].append/extend
-        for room in roomAvailList:
-            for day in roomAvailList[room]:
-                for courseDetail in roomAvailList[room][day]:
-                    classDetailDict[courseDetail[0]].extend([day, room, courseDetail[1], courseDetail[2]])
-        # Covert the lists to sets:
+        print(courseDict.keys())
 
-        # print(classDetailDict.values())
 
-        # FOR DEBUG
-        print("FUM FUM FUM")
-        print(len(fatalFailures), fatalFailures)
-        print("TOTAL:", len(bin1) + len(bin2))
+        # return render_template('showRooms.html', roomAvailList = roomAvailList)
+        return render_template('showRooms.html', courseDict = courseDict)
 
-        print("UN   UN   UN")
-        print(len(unscheduledClasses))
-
-        print("TRUM  TRUM  TRUM")
-        print(len(allScheduledClasses))
-        # print(allScheduledClasses)
-
-        return render_template('showRooms.html', roomAvailList=roomAvailList)
-        # return render_template('showRooms.html', classDetailDict=classDetailDict)
     except Exception as e:
         print( e )
         return render_template( 'formatfailure.html' )
@@ -165,17 +112,9 @@ def analyze():
 def DO_THE_ACTUAL_SCHEDULING(binOfClasses, attemptPreferenceBasedScheduling):
     unscheduledClasses = []
     for course in binOfClasses:
-        if course['roomPrefs'] == 0 or not attemptPreferenceBasedScheduling:
-            # There are no preferred rooms so assign this course a RANDOM ROOM
-            room = findAvailableRoom(course['days'], course['startTime'], course['endTime'])
-            if room:
-                # A room was found
-                for day in course['days']:
-                    blockRoom(course['className'], room, day, course['startTime'], course['endTime'])
-            else:
-                # No room could be found for the course
-                unscheduledClasses.append(course)
-        else:
+        # if course['className'] == "EAP101ZM":
+            # import pdb; pdb.set_trace()
+        if course['roomPrefs'] and attemptPreferenceBasedScheduling:
             # There is a preferred so cheeck if it is available for the course days
             roomAvailable = True
             for day in course['days']:
@@ -188,7 +127,40 @@ def DO_THE_ACTUAL_SCHEDULING(binOfClasses, attemptPreferenceBasedScheduling):
                     blockRoom(course['className'], course['roomPrefs'], day, course['startTime'], course['endTime'])
             else:
                 unscheduledClasses.append(course)
+        else:
+            # There are no preferred rooms so assign this course a RANDOM ROOM
+            room = findAvailableRoom(course['days'], course['startTime'], course['endTime'])
+            if room:
+                # A room was found
+                for day in course['days']:
+                    blockRoom(course['className'], room, day, course['startTime'], course['endTime'])
+            else:
+                # No room could be found for the course
+                unscheduledClasses.append(course)
     return unscheduledClasses
+
+
+
+def getCourseAbbrs(courseName):
+    """ Returns department abbreviation from course name by returning all characters
+        up to the second set of alphabetical characters. The first set of alphabets
+        is always the dept. abbr. and the following set of numbers is the course level,
+        both of which make up the desired abbreviation. A series of alphabets always
+        follows the course level.
+    """
+    deptAbbrFound = False
+    courseLevelFound = False
+    for index, char in enumerate(courseName):
+        if char.lower() in 'abcdefghijklmnopqrstuvwxyz' and deptAbbrFound and courseLevelFound:
+            courseAbbr = courseName[:index]
+            sectionAbbr = courseName[index:]
+            return courseAbbr, sectionAbbr
+        elif char.lower() in 'abcdefghijklmnopqrstuvwxyz':
+            deptAbbrFound = True
+        elif char in '1234567890':
+            courseLevelFound = True
+
+
 
 def findAvailableRoom(days, startT, endT):
     # FOR EACH ROOM IN roomAvailList : For each of the days check if the timeslot is available,
@@ -204,6 +176,8 @@ def findAvailableRoom(days, startT, endT):
             return room
     # If execution reaches this point, a room hasn't been found
     return None
+
+
 
 def binClasses(classList):
     ''' Classify classes into two bins:
@@ -237,6 +211,8 @@ def buildRoomAvailList(roomList):
     global roomAvailList    # since mutating
     roomAvailList = {roomName : {day : [] for day in range(1,6)} for roomName in roomList}
 
+
+
 def blockRoom (className, roomName, day, startT, endT):
     ''' If room is available for the time slot for the specific day,
         block the room in the roomAvail dict and return TRUE. Otherwise,
@@ -255,6 +231,8 @@ def blockRoom (className, roomName, day, startT, endT):
     else:
         return False
 
+
+
 def roomIsAvailable(roomName, day, startT, endT):
     ''' Check availability from the roomAvail dict
         for roomName on day between startT and endT.
@@ -268,24 +246,6 @@ def roomIsAvailable(roomName, day, startT, endT):
     # Reached here, so not False
     return True
 
-# def randomizeRoom(className, roomName, day, startT, endT):
-#     ''' Two ways: (1) Look for next available room that fits size and schedule
-#         (brute force). (2) Get list of available rooms, order in decreasing size,
-#         order outstanding rooms in decreasing size, then do optimal allocation.
-#         Stick with way (1) for now. '''
-#     for room in parseRooms():
-#         if roomIsAvailable(room, day)
-#     availableRooms=[]
-#     for room in parseRooms():
-#         print(room['BC 204'])
-#         #print a room that is available during this time slot,and has the room cap
-#         # if roomIsAvailable (room, day, startT, endT) and size>= sizeRoom:
-#         #     p
-#         #     print()
-#         # else:
-#         #     pass
-#
-#     print('failed to schedule')
 
 
 def features(roomID):

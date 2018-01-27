@@ -61,7 +61,10 @@ def parseCourseDetails(roomsList,filename):
     for row in range(len(CLA)):
         classValid = True
         # (1) Class name
-        try:    className= str(CLA[row][2]).strip() + str(CLA[row][3]).strip() + str(CLA[row][4]).strip()
+        try:
+            className= str(CLA[row][2]).strip() + str(CLA[row][3]).strip() + str(CLA[row][4]).strip()
+            if not className:
+                classValid = False
         except: classValid = False
         # (2-3) Class start and end times
         try:
