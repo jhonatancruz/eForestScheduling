@@ -121,7 +121,7 @@ def parseCourseDetails(roomsList,filename):
 
     # Return a dictionary containing the list of classes and the list
     # of classes considered invalid and thus excluded from consideration
-    return {'classes':classes, 'invalidClasses':invalidClasses}
+    return classes, invalidClasses
 
 def parseRooms():
     allRooms= "static/img/Room_Sizes.xlsx"

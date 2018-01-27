@@ -67,9 +67,10 @@ def analyze():
     try:
         # Import data from spreadsheet
         global classList
-        classesStuff = parseCourseDetails(parseRooms(),filename)
-        classList = classesStuff['classes']
-        invalidClasses = classesStuff['invalidClasses']
+        classList, invalidClasses = parseCourseDetails(parseRooms(), filename)
+        # classesStuff = parseCourseDetails(parseRooms(),filename)
+        # classList = classesStuff['classes']
+        # invalidClasses = classesStuff['invalidClasses']
 
         buildRoomAvailList(parseRooms())
         bins = binClasses(classList)
